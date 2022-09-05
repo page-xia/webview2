@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package webview2
@@ -390,9 +391,15 @@ func (e *chromiumedge) PermissionRequested(sender *iCoreWebView2, args *iCoreWeb
 	var kind _CoreWebView2PermissionKind
 	args.vtbl.GetPermissionKind.Call(
 		uintptr(unsafe.Pointer(args)),
-		uintptr(kind),
+		uintptr(unsafe.Pointer(&kind)),
 	)
 	if kind == _CoreWebView2PermissionKindClipboardRead {
+		args.vtbl.PutState.Call(
+			uintptr(unsafe.Pointer(args)),
+			uintptr(_CoreWebView2PermissionStateAllow),
+		)
+	}
+	if kind == _CoreWebView2PermissionKindMicrophone {
 		args.vtbl.PutState.Call(
 			uintptr(unsafe.Pointer(args)),
 			uintptr(_CoreWebView2PermissionStateAllow),
@@ -475,8 +482,8 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 		0xCF0000,   // WS_OVERLAPPEDWINDOW
 		0x80000000, // CW_USEDEFAULT
 		0x80000000, // CW_USEDEFAULT
-		1280,
-		720,
+		590,
+		800,
 		0,
 		0,
 		uintptr(hinstance),
