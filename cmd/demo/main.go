@@ -1,7 +1,9 @@
 package main
 
-import "github.com/Tim-Paik/webview2"
-import _ "github.com/Tim-Paik/webview2/manifest"
+import (
+	"github.com/page-xia/webview2"
+	_ "github.com/page-xia/webview2/manifest"
+)
 
 func main() {
 	w := webview2.New(false)
