@@ -4,6 +4,9 @@ This is a fork of [go-webview2](https://github.com/jchv/go-webview2)
 
 **No EdgeHTML fallback**
 
+### Fix bug:
+1. func PermissionRequested `PermissionKind` use unsafe.Pointer
+
 ### Added some functions I need:
 
 1. High DPI support
@@ -14,6 +17,7 @@ This is a fork of [go-webview2](https://github.com/jchv/go-webview2)
 6. You can set `webview2.UserDataFolder = "Your own UserDataFolder"` before creating the window to custom userData folder
 7. You can set `webview2.UserAgent = "Your own UserAgent"` before creating the window to custom UserAgent
 8. `webview2.NewWindow` can now use existing windows(**Untested**)
+9. Support default permission Microphone&Camera
 
 #### Other Changes:
 
