@@ -393,13 +393,7 @@ func (e *chromiumedge) PermissionRequested(sender *iCoreWebView2, args *iCoreWeb
 		uintptr(unsafe.Pointer(args)),
 		uintptr(unsafe.Pointer(&kind)),
 	)
-	if kind == _CoreWebView2PermissionKindClipboardRead {
-		args.vtbl.PutState.Call(
-			uintptr(unsafe.Pointer(args)),
-			uintptr(_CoreWebView2PermissionStateAllow),
-		)
-	}
-	if kind == _CoreWebView2PermissionKindMicrophone {
+	if kind == _CoreWebView2PermissionKindClipboardRead || kind == _CoreWebView2PermissionKindMicrophone || kind == _CoreWebView2PermissionKindCamera {
 		args.vtbl.PutState.Call(
 			uintptr(unsafe.Pointer(args)),
 			uintptr(_CoreWebView2PermissionStateAllow),
