@@ -47,7 +47,7 @@ func checkRuntime(err error) {
 func init() {
 	// Enable High Dpi Support
 	var major, _, _ = RtlGetNtVersionNumbers()
-	if major >= 6 {
+	if major > 6 {
 		windows.NewLazySystemDLL("Shcore").NewProc("SetProcessDpiAwareness").Call(1)
 	}
 
