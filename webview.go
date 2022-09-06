@@ -55,6 +55,7 @@ var (
 	user32SetWindowLongPtrW  = user32.NewProc("SetWindowLongPtrW")
 	user32AdjustWindowRect   = user32.NewProc("AdjustWindowRect")
 	user32SetWindowPos       = user32.NewProc("SetWindowPos")
+	user32GetDpiForSystem    = user32.NewProc("GetDpiForSystem")
 
 	defaultHeap uintptr
 )
@@ -468,6 +469,9 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 		hIconSm:       windows.Handle(icon),
 		lpfnWndProc:   windows.NewCallback(wndproc),
 	}
+	var dpi = getDpi()
+	var width = uintptr(dpi * 590)
+	var height = uintptr(dpi * 800)
 	user32RegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
 	w.hwnd, _, _ = user32CreateWindowExW.Call(
 		35, /* CS_HREDRAW | CS_VREDRAW | CS_OWNDC */
@@ -476,8 +480,8 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 		0xCF0000,   // WS_OVERLAPPEDWINDOW
 		0x80000000, // CW_USEDEFAULT
 		0x80000000, // CW_USEDEFAULT
-		590,
-		800,
+		width,
+		height,
 		0,
 		0,
 		uintptr(hinstance),
@@ -544,7 +548,9 @@ func (w *webview) SetSize(width int, height int, hints Hint) {
 		style |= (_WSThickFrame | _WSMaximizeBox)
 	}
 	user32SetWindowLongPtrW.Call(w.hwnd, uintptr(index), style)
-
+	var dpi = getDpi()
+	width = dpi * width
+	height = dpi * height
 	if hints == HintMax {
 		w.maxsz.x = int32(width)
 		w.maxsz.y = int32(height)
@@ -580,4 +586,15 @@ func (w *webview) Dispatch(f func()) {
 func (w *webview) Bind(name string, f interface{}) error {
 	// TODO
 	return nil
+}
+func getDpi() int {
+	var major, _, _ = RtlGetNtVersionNumbers()
+	var dpi uintptr
+	if major >= 10 {
+		dpi, _, _ = user32GetDpiForSystem.Call()
+	}
+	if int(dpi) < 96 {
+		dpi = 96
+	}
+	return int(dpi) / 96
 }
