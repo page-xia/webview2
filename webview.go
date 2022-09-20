@@ -23,6 +23,7 @@ var DisableWebSecurity = false
 var UserDataFolder = filepath.Join(os.Getenv("AppData"),
 	strings.TrimSuffix(filepath.Base(os.Args[0]), path.Ext(os.Args[0])))
 var UserAgent = ""
+var toUrl = ""
 
 var (
 	ole32               = windows.NewLazySystemDLL("ole32")
@@ -44,6 +45,7 @@ var (
 	user32UpdateWindow       = user32.NewProc("UpdateWindow")
 	user32SetFocus           = user32.NewProc("SetFocus")
 	user32GetMessageW        = user32.NewProc("GetMessageW")
+	user32PostMessageW       = user32.NewProc("PostMessageW")
 	user32TranslateMessage   = user32.NewProc("TranslateMessage")
 	user32DispatchMessageW   = user32.NewProc("DispatchMessageW")
 	user32DefWindowProcW     = user32.NewProc("DefWindowProcW")
@@ -98,6 +100,7 @@ const (
 	_WMSize          = 0x0005
 	_WMClose         = 0x0010
 	_WMQuit          = 0x0012
+	_WMNavigate      = 0x2022
 	_WMGetMinMaxInfo = 0x0024
 	_WMApp           = 0x8000
 )
@@ -404,7 +407,7 @@ func (e *chromiumedge) PermissionRequested(sender *iCoreWebView2, args *iCoreWeb
 }
 
 // New creates a new webview in a new window.
-func New(debug bool) WebView { return NewWindow(debug, nil) }
+func New(debug bool, window unsafe.Pointer) WebView { return NewWindow(debug, window) }
 
 // NewWindow creates a new webview using an existing window.
 func NewWindow(debug bool, window unsafe.Pointer) WebView {
@@ -513,9 +516,13 @@ func (w *webview) Run() {
 			0,
 			0,
 		)
+		if msg.message == _WMNavigate {
+			w.browser.Navigate(toUrl)
+		}
 		if msg.message == _WMApp {
 
 		} else if msg.message == _WMQuit {
+			user32PostQuitMessage.Call(0)
 			return
 		}
 		user32TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
@@ -524,6 +531,7 @@ func (w *webview) Run() {
 }
 
 func (w *webview) Terminate() {
+	user32PostMessageW.Call(w.hwnd, _WMQuit)
 	user32PostQuitMessage.Call(0)
 }
 
@@ -532,6 +540,8 @@ func (w *webview) Window() unsafe.Pointer {
 }
 
 func (w *webview) Navigate(url string) {
+	toUrl = url
+	user32PostMessageW.Call(w.hwnd, _WMNavigate)
 	w.browser.Navigate(url)
 }
 
