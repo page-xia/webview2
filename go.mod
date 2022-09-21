@@ -3,6 +3,7 @@ module github.com/page-xia/webview2
 go 1.16
 
 require (
+	github.com/akavel/rsrc v0.10.2 // indirect
 	github.com/gen2brain/dlgs v0.0.0-20210609125024-bf6c92aaa984
 	github.com/gopherjs/gopherjs v0.0.0-20210621113107-84c6004145de // indirect
 	github.com/jchv/go-winloader v0.0.0-20210323001710-152514a7f070

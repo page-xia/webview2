@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package webview2
@@ -58,7 +59,7 @@ type WebView interface {
 	// Navigate navigates webview to the given URL. URL may be a data URI, i.e.
 	// "data:text/text,<html>...</html>". It is often ok not to url-encode it
 	// properly, webview will re-encode it for you.
-	Navigate(url string)
+	Navigate(url string, isMsg bool)
 
 	// Init injects JavaScript code at the initialization of the new page. Every
 	// time the webview will open a the new page - this initialization code will
@@ -68,7 +69,7 @@ type WebView interface {
 	// Eval evaluates arbitrary JavaScript code. Evaluation happens asynchronously,
 	// also the result of the expression is ignored. Use RPC bindings if you want
 	// to receive notifications about the results of the evaluation.
-	Eval(js string)
+	Eval(js string, isMsg bool)
 
 	// Bind binds a callback function so that it will appear under the given name
 	// as a global JavaScript function. Internally it uses webview_init().

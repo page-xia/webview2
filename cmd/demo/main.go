@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	w := webview2.New(false)
+	w := webview2.New(false, nil)
 	if w == nil {
 		println("Failed to load webview.")
 		return
@@ -14,6 +14,6 @@ func main() {
 	defer w.Destroy()
 	w.SetTitle(`Minimal webview example`)
 	w.SetSize(1280, 720, webview2.HintNone)
-	w.Navigate(`https://www.google.com`)
+	w.Navigate(`https://www.google.com`, false)
 	w.Run()
 }

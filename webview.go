@@ -24,7 +24,7 @@ var UserDataFolder = filepath.Join(os.Getenv("AppData"),
 	strings.TrimSuffix(filepath.Base(os.Args[0]), path.Ext(os.Args[0])))
 var UserAgent = ""
 var toUrl = ""
-
+var evalJs = ""
 var (
 	ole32               = windows.NewLazySystemDLL("ole32")
 	ole32CoInitializeEx = ole32.NewProc("CoInitializeEx")
@@ -101,6 +101,7 @@ const (
 	_WMClose         = 0x0010
 	_WMQuit          = 0x0012
 	_WMNavigate      = 0x2022
+	_WMEval          = 0x2023
 	_WMGetMinMaxInfo = 0x0024
 	_WMApp           = 0x8000
 )
@@ -289,10 +290,16 @@ func (e *chromiumedge) Embed(debug bool, hwnd uintptr) bool {
 			uintptr(0),
 		)
 	}
+	var ua *uint16
+	settings.vtbl.getUserAgent.Call(
+		uintptr(unsafe.Pointer(settings)),
+		uintptr(unsafe.Pointer(&ua)),
+	)
+	var s = windows.UTF16PtrToString(ua)
 	if UserAgent != "" {
 		settings.vtbl.putUserAgent.Call(
 			uintptr(unsafe.Pointer(settings)),
-			uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(UserAgent))),
+			uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(s+" "+UserAgent))),
 		)
 	}
 	return true
@@ -462,7 +469,6 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 	icoh, _, _ := user32GetSystemMetrics.Call(_SystemMetricsCyIcon)
 
 	icon, _, _ := user32LoadImageW.Call(uintptr(hinstance), 32512, icow, icoh, 0)
-
 	wc := _WndClassExW{
 		style:         35, /* CS_HREDRAW | CS_VREDRAW | CS_OWNDC */
 		cbSize:        uint32(unsafe.Sizeof(_WndClassExW{})),
@@ -475,14 +481,15 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 	var dpi = getDpi()
 	var width = uintptr(dpi * 590)
 	var height = uintptr(dpi * 800)
+	var mw, _, _ = user32GetSystemMetrics.Call(0)
 	user32RegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
 	w.hwnd, _, _ = user32CreateWindowExW.Call(
 		35, /* CS_HREDRAW | CS_VREDRAW | CS_OWNDC */
 		uintptr(unsafe.Pointer(windows.StringToUTF16Ptr("webview"))),
 		uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(""))),
-		0xCF0000,   // WS_OVERLAPPEDWINDOW
-		0x80000000, // CW_USEDEFAULT
-		0x80000000, // CW_USEDEFAULT
+		0xCF0000, // WS_OVERLAPPEDWINDOW
+		mw-width, // CW_USEDEFAULT
+		0,        // CW_USEDEFAULT
 		width,
 		height,
 		0,
@@ -519,6 +526,9 @@ func (w *webview) Run() {
 		if msg.message == _WMNavigate {
 			w.browser.Navigate(toUrl)
 		}
+		if msg.message == _WMEval {
+			w.browser.Eval(evalJs)
+		}
 		if msg.message == _WMApp {
 
 		} else if msg.message == _WMQuit {
@@ -539,10 +549,13 @@ func (w *webview) Window() unsafe.Pointer {
 	return unsafe.Pointer(w.hwnd)
 }
 
-func (w *webview) Navigate(url string) {
+func (w *webview) Navigate(url string, isMsg bool) {
 	toUrl = url
-	user32PostMessageW.Call(w.hwnd, _WMNavigate)
-	w.browser.Navigate(url)
+	if isMsg {
+		user32PostMessageW.Call(w.hwnd, _WMNavigate)
+	} else {
+		w.browser.Navigate(url)
+	}
 }
 
 func (w *webview) SetTitle(title string) {
@@ -585,8 +598,13 @@ func (w *webview) Init(js string) {
 	w.browser.Init(js)
 }
 
-func (w *webview) Eval(js string) {
-	w.browser.Eval(js)
+func (w *webview) Eval(js string, isMsg bool) {
+	evalJs = js
+	if isMsg {
+		user32PostMessageW.Call(w.hwnd, _WMEval)
+	} else {
+		w.browser.Eval(js)
+	}
 }
 
 func (w *webview) Dispatch(f func()) {
