@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	webview2.UserAgent = "webview/2.0"
 	w := webview2.New(false, nil)
 	if w == nil {
 		println("Failed to load webview.")
