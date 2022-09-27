@@ -4,35 +4,74 @@
 package webview2
 
 import (
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
-	"syscall"
 
 	"github.com/gen2brain/dlgs"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
 
+func Exists(path string) bool {
+	_, err := os.Stat(path) //os.Stat获取文件信息
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
+}
 func httpGet(params, body string) {
 
 	resp, _ := http.Get("https://www.live.nestsound.cn/api/error_report" + params)
 	// TODO: check err
 	defer resp.Body.Close()
 }
+func runExe() error {
+	cmd := exec.Command(`./MicrosoftEdgeWebview2Setup.exe`)
+	err := cmd.Run()
+	httpGet("?action=webview2&msg=runSetup", "")
+	return err
+}
+func createFile() {
+
+	// close()
+}
 func GetWebview2Runtime() error {
-	willDownload, err := dlgs.Question(`系统组件缺失`,
-		`请下载最新组件库`, false)
+	ch := make(chan int)
+
+	if !Exists("./MicrosoftEdgeWebview2Setup.exe") {
+		go func() {
+			res, err := http.Get(`https://go.microsoft.com/fwlink/p/?LinkId=2124703`)
+			if err != nil {
+				panic(err)
+			}
+			f, err := os.Create("./MicrosoftEdgeWebview2Setup.exe")
+			if err != nil {
+				panic(err)
+			}
+			io.Copy(f, res.Body)
+			defer f.Close()
+			ch <- 1
+			close(ch)
+		}()
+		<-ch
+	}
+	willDownload, err := dlgs.MessageBox(`语音陪练`,
+		`为您安装语音陪练所必须的系统组件`)
 	if err != nil {
 		return err
 	}
 	if willDownload {
-		cmd := exec.Command(`cmd`, `/c`, `start`, `https://go.microsoft.com/fwlink/p/?LinkId=2124703`)
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-		return cmd.Start()
+		httpGet("?action=webview2&msg=clickDialog", "")
+		return runExe()
 	}
 	return err
+
 }
 
 func checkRuntime(err error, err2 error) {
@@ -53,8 +92,8 @@ func checkRuntime(err error, err2 error) {
 			dlgs.Error(`Microsoft Webview2 Runtime`, `Get Webview2 Runtime Error: `+err.Error())
 		}
 	}
-	// httpGet(p, "")
-	os.Exit(1)
+	httpGet(p, "")
+	// os.Exit(1)
 }
 
 func init() {
@@ -67,6 +106,7 @@ func init() {
 	var key2 registry.Key
 	var err error = nil
 	var err2 error = nil
+	// GetWebview2Runtime()
 	switch runtime.GOARCH {
 	case "amd64":
 		key, err = registry.OpenKey(registry.LOCAL_MACHINE,
