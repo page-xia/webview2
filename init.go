@@ -31,8 +31,8 @@ func httpGet(params, body string) {
 	// TODO: check err
 	defer resp.Body.Close()
 }
-func runExe(url string) error {
-	cmd := exec.Command(url)
+func runExe(url string, params []string) error {
+	cmd := exec.Command(url, params...)
 	err := cmd.Run()
 	// httpGet("?action=webview2&msg=runSetup", "")
 	return err
@@ -67,8 +67,8 @@ func GetWebview2Runtime() error {
 	}
 	if willDownload {
 		httpGet("?action=webview2&msg=clickDialog", "")
-
-		return runExe(`./MicrosoftEdgeWebview2Setup.exe`)
+		var s = []string{}
+		return runExe(`./MicrosoftEdgeWebview2Setup.exe`, s)
 	}
 	return err
 
@@ -93,7 +93,7 @@ func checkRuntime(err error, err2 error) {
 		}
 	}
 	httpGet(p, "")
-	runExe(`./voiceLive.exe`)
+	runExe(`./voiceLive.exe`, os.Args)
 	os.Exit(1)
 }
 

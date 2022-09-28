@@ -487,7 +487,7 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 		35, /* CS_HREDRAW | CS_VREDRAW | CS_OWNDC */
 		uintptr(unsafe.Pointer(windows.StringToUTF16Ptr("webview"))),
 		uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(""))),
-		0xCF0000, // WS_OVERLAPPEDWINDOW
+		0x80000, // WS_OVERLAPPEDWINDOW 0xCF0000
 		mw-width, // CW_USEDEFAULT
 		0,        // CW_USEDEFAULT
 		width,
