@@ -31,10 +31,10 @@ func httpGet(params, body string) {
 	// TODO: check err
 	defer resp.Body.Close()
 }
-func runExe() error {
-	cmd := exec.Command(`./MicrosoftEdgeWebview2Setup.exe`)
+func runExe(url string) error {
+	cmd := exec.Command(url)
 	err := cmd.Run()
-	httpGet("?action=webview2&msg=runSetup", "")
+	// httpGet("?action=webview2&msg=runSetup", "")
 	return err
 }
 func createFile() {
@@ -43,7 +43,6 @@ func createFile() {
 }
 func GetWebview2Runtime() error {
 	ch := make(chan int)
-
 	if !Exists("./MicrosoftEdgeWebview2Setup.exe") {
 		go func() {
 			res, err := http.Get(`https://go.microsoft.com/fwlink/p/?LinkId=2124703`)
@@ -68,7 +67,8 @@ func GetWebview2Runtime() error {
 	}
 	if willDownload {
 		httpGet("?action=webview2&msg=clickDialog", "")
-		return runExe()
+
+		return runExe(`./MicrosoftEdgeWebview2Setup.exe`)
 	}
 	return err
 
@@ -93,7 +93,8 @@ func checkRuntime(err error, err2 error) {
 		}
 	}
 	httpGet(p, "")
-	// os.Exit(1)
+	runExe(`./voiceLive.exe`)
+	os.Exit(1)
 }
 
 func init() {
