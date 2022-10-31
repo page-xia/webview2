@@ -31,8 +31,9 @@ func httpGet(params, body string) {
 	// TODO: check err
 	defer resp.Body.Close()
 }
-func runExe(url string) error {
-	cmd := exec.Command(url)
+func runExe(url string, params []string) error {
+	cmd := exec.Command(url, params...)
+	// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	err := cmd.Run()
 	// httpGet("?action=webview2&msg=runSetup", "")
 	return err
@@ -67,8 +68,8 @@ func GetWebview2Runtime() error {
 	}
 	if willDownload {
 		httpGet("?action=webview2&msg=clickDialog", "")
-
-		return runExe(`./MicrosoftEdgeWebview2Setup.exe`)
+		var s = []string{}
+		return runExe(`./MicrosoftEdgeWebview2Setup.exe`, s)
 	}
 	return err
 
@@ -78,23 +79,24 @@ func checkRuntime(err error, err2 error) {
 	if err == nil || err2 == nil {
 		return
 	}
-	// p := url.Values{}
-	// p.Set("action", "webview2")
 	var p string = ""
 	if err != registry.ErrNotExist && err2 != registry.ErrNotExist {
 		// p.Set("msg", "install runtime Exist"+err.Error())
 		p += "?action=webview2&msg=install_runtime_Exist" + err.Error()
 		dlgs.Error(`Microsoft Webview2 Runtime`, `Webview2 Runtime Error: `+err.Error())
 	} else {
-		if err := GetWebview2Runtime(); err != nil {
+		err = GetWebview2Runtime();
+		if err != nil {
 			p += "?action=webview2&msg=Get_Webview2_Runtime_Error" + err.Error()
 			// p.Set("msg", "Get Webview2 Runtime Error"+err.Error())
 			dlgs.Error(`Microsoft Webview2 Runtime`, `Get Webview2 Runtime Error: `+err.Error())
+		} else {
+			runExe(`./voiceLive.exe`, os.Args)
 		}
 	}
 	httpGet(p, "")
-	runExe(`./voiceLive.exe`)
 	os.Exit(1)
+
 }
 
 func init() {
@@ -107,7 +109,7 @@ func init() {
 	var key2 registry.Key
 	var err error = nil
 	var err2 error = nil
-	// GetWebview2Runtime()
+
 	switch runtime.GOARCH {
 	case "amd64":
 		key, err = registry.OpenKey(registry.LOCAL_MACHINE,
