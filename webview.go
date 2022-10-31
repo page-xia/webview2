@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-var DisableWebSecurity = false
+var DisableWebSecurity = true
 var UserDataFolder = filepath.Join(os.Getenv("AppData"),
 	strings.TrimSuffix(filepath.Base(os.Args[0]), path.Ext(os.Args[0])))
 var UserAgent = ""
@@ -230,7 +230,7 @@ func newchromiumedge() *chromiumedge {
 func (e *chromiumedge) Embed(debug bool, hwnd uintptr) bool {
 	e.hwnd = hwnd
 	if DisableWebSecurity {
-		os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--disable-web-security")
+		os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--disable-web-security --autoplay-policy=no-user-gesture-required")
 	}
 	res, err := createCoreWebView2EnvironmentWithOptions(nil, windows.StringToUTF16Ptr(UserDataFolder), 0, e.envCompleted)
 	if err != nil {
