@@ -499,6 +499,10 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 	var width = uintptr(dpi * 590)
 	var height = uintptr(dpi * 800)
 	var mw, _, _ = user32GetSystemMetrics.Call(0)
+	var mh, _, _ = user32GetSystemMetrics.Call(1)
+	if (height > mh) {
+		height = mh
+	}
 	user32RegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
 	w.hwnd, _, _ = user32CreateWindowExW.Call(
 		35, /* CS_HREDRAW | CS_VREDRAW | CS_OWNDC */
