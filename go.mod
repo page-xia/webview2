@@ -27,3 +27,4 @@ require (
 	golang.org/x/sys v0.1.0
 	gopkg.in/resty.v1 v1.12.0 // indirect
 )
+retract v1.0.0
