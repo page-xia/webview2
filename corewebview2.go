@@ -397,7 +397,19 @@ func newICoreWebView2WebMessageReceivedEventHandler(impl iCoreWebView2WebMessage
 		impl: impl,
 	}
 }
-
+type _ICoreWebView2WebResourceRequestVtbl struct {
+	_IUnknownVtbl
+	GetUri     ComProc
+	PutUri     ComProc
+	GetMethod  ComProc
+	PutMethod  ComProc
+	GetContent ComProc
+	PutContent ComProc
+	GetHeaders ComProc
+}
+type ICoreWebView2WebResourceRequest struct {
+	vtbl *_ICoreWebView2WebResourceRequestVtbl
+}
 // ICoreWebView2PermissionRequestedEventHandler
 
 type iCoreWebView2PermissionRequestedEventHandlerImpl interface {
@@ -443,6 +455,74 @@ var iCoreWebView2PermissionRequestedEventHandlerFn = iCoreWebView2PermissionRequ
 func newICoreWebView2PermissionRequestedEventHandler(impl iCoreWebView2PermissionRequestedEventHandlerImpl) *iCoreWebView2PermissionRequestedEventHandler {
 	return &iCoreWebView2PermissionRequestedEventHandler{
 		vtbl: &iCoreWebView2PermissionRequestedEventHandlerFn,
+		impl: impl,
+	}
+}
+type _IUnknownVtbl struct {
+	QueryInterface ComProc
+	AddRef         ComProc
+	Release        ComProc
+}
+
+type _IUnknownImpl interface {
+	QueryInterface(refiid, object uintptr) uintptr
+	AddRef() uintptr
+	Release() uintptr
+}
+
+type _ICoreWebView2WebResourceRequestedEventHandlerVtbl struct {
+	_IUnknownVtbl
+	Invoke ComProc
+}
+
+type iCoreWebView2WebResourceRequestedEventHandler struct {
+	vtbl *_ICoreWebView2WebResourceRequestedEventHandlerVtbl
+	impl _ICoreWebView2WebResourceRequestedEventHandlerImpl
+}
+type _ICoreWebView2WebResourceRequestedEventArgsVtbl struct {
+	_IUnknownVtbl
+	GetRequest         ComProc
+	GetResponse        ComProc
+	PutResponse        ComProc
+	GetDeferral        ComProc
+	GetResourceContext ComProc
+}
+type ICoreWebView2WebResourceRequestedEventArgs struct {
+	vtbl *_ICoreWebView2WebResourceRequestedEventArgsVtbl
+}
+func _ICoreWebView2WebResourceRequestedEventHandlerIUnknownQueryInterface(this *iCoreWebView2WebResourceRequestedEventHandler, refiid, object uintptr) uintptr {
+	return this.impl.QueryInterface(refiid, object)
+}
+
+func _ICoreWebView2WebResourceRequestedEventHandlerIUnknownAddRef(this *iCoreWebView2WebResourceRequestedEventHandler) uintptr {
+	return this.impl.AddRef()
+}
+
+func _ICoreWebView2WebResourceRequestedEventHandlerIUnknownRelease(this *iCoreWebView2WebResourceRequestedEventHandler) uintptr {
+	return this.impl.Release()
+}
+
+func _ICoreWebView2WebResourceRequestedEventHandlerInvoke(this *iCoreWebView2WebResourceRequestedEventHandler, sender *iCoreWebView2, args *ICoreWebView2WebResourceRequestedEventArgs) uintptr {
+	return this.impl.WebResourceRequested(sender, args)
+}
+
+type _ICoreWebView2WebResourceRequestedEventHandlerImpl interface {
+	_IUnknownImpl
+	WebResourceRequested(sender *iCoreWebView2, args *ICoreWebView2WebResourceRequestedEventArgs) uintptr
+}
+
+var _ICoreWebView2WebResourceRequestedEventHandlerFn = _ICoreWebView2WebResourceRequestedEventHandlerVtbl{
+	_IUnknownVtbl{
+		NewComProc(_ICoreWebView2WebResourceRequestedEventHandlerIUnknownQueryInterface),
+		NewComProc(_ICoreWebView2WebResourceRequestedEventHandlerIUnknownAddRef),
+		NewComProc(_ICoreWebView2WebResourceRequestedEventHandlerIUnknownRelease),
+	},
+	NewComProc(_ICoreWebView2WebResourceRequestedEventHandlerInvoke),
+}
+
+func newICoreWebView2WebResourceRequestedEventHandler(impl _ICoreWebView2WebResourceRequestedEventHandlerImpl) *iCoreWebView2WebResourceRequestedEventHandler {
+	return &iCoreWebView2WebResourceRequestedEventHandler{
+		vtbl: &_ICoreWebView2WebResourceRequestedEventHandlerFn,
 		impl: impl,
 	}
 }
@@ -494,4 +574,16 @@ type iCoreWebView2Settings3Vtbl struct {
 
 type iCoreWebView2Settings3 struct {
 	vtbl *iCoreWebView2Settings3Vtbl
+}
+func (i *ICoreWebView2WebResourceRequestedEventArgs) GetRequest() (*ICoreWebView2WebResourceRequest, error) {
+	var err error
+	var request *ICoreWebView2WebResourceRequest
+	_, _, err = i.vtbl.GetRequest.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&request)),
+	)
+	if err != windows.ERROR_SUCCESS {
+		return nil, err
+	}
+	return request, nil
 }

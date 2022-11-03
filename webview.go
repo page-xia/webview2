@@ -199,6 +199,8 @@ type chromiumedge struct {
 	controllerCompleted *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler
 	webMessageReceived  *iCoreWebView2WebMessageReceivedEventHandler
 	permissionRequested *iCoreWebView2PermissionRequestedEventHandler
+	webResourceRequested  *iCoreWebView2WebResourceRequestedEventHandler
+	WebResourceRequestedCallback func(request *ICoreWebView2WebResourceRequest, args *ICoreWebView2WebResourceRequestedEventArgs)
 	msgcb               func(string)
 }
 
@@ -224,6 +226,7 @@ func newchromiumedge() *chromiumedge {
 	e.controllerCompleted = newICoreWebView2CreateCoreWebView2ControllerCompletedHandler(e)
 	e.webMessageReceived = newICoreWebView2WebMessageReceivedEventHandler(e)
 	e.permissionRequested = newICoreWebView2PermissionRequestedEventHandler(e)
+	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
 	return e
 }
 
@@ -304,7 +307,16 @@ func (e *chromiumedge) Embed(debug bool, hwnd uintptr) bool {
 	}
 	return true
 }
-
+func (e *chromiumedge) WebResourceRequested(sender *iCoreWebView2, args *ICoreWebView2WebResourceRequestedEventArgs) uintptr {
+	req, err := args.GetRequest()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if e.WebResourceRequestedCallback != nil {
+		e.WebResourceRequestedCallback(req, args)
+	}
+	return 0
+}
 func (e *chromiumedge) Navigate(url string) {
 	e.webview.vtbl.Navigate.Call(
 		uintptr(unsafe.Pointer(e.webview)),
@@ -375,6 +387,11 @@ func (e *chromiumedge) ControllerCompleted(res uintptr, controller *iCoreWebView
 	e.webview.vtbl.AddPermissionRequested.Call(
 		uintptr(unsafe.Pointer(e.webview)),
 		uintptr(unsafe.Pointer(e.permissionRequested)),
+		uintptr(unsafe.Pointer(&token)),
+	)
+	e.webview.vtbl.AddWebResourceRequested.Call(
+		uintptr(unsafe.Pointer(e.webview)),
+		uintptr(unsafe.Pointer(e.webResourceRequested)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 
