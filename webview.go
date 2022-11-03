@@ -233,7 +233,7 @@ func newchromiumedge() *chromiumedge {
 func (e *chromiumedge) Embed(debug bool, hwnd uintptr) bool {
 	e.hwnd = hwnd
 	if DisableWebSecurity {
-		os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--disable-web-security --autoplay-policy=no-user-gesture-required")
+		os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--disable-web-security --autoplay-policy=no-user-gesture-required --allow-file-access-from-files")
 	}
 	res, err := createCoreWebView2EnvironmentWithOptions(nil, windows.StringToUTF16Ptr(UserDataFolder), 0, e.envCompleted)
 	if err != nil {

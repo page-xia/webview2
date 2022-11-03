@@ -9,6 +9,10 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+//go:generate go run github.com/nsf/bin2go -in .\arm64\WebView2Loader.dll -out module_arm64.go -pkg webviewloader moduleBin
+//go:generate go run github.com/nsf/bin2go -in .\x64\WebView2Loader.dll -out module_amd64.go -pkg webviewloader moduleBin
+//go:generate go run github.com/nsf/bin2go -in .\x86\WebView2Loader.dll -out module_386.go -pkg webviewloader moduleBin
+
 var (
 	nativeModule                                       = windows.NewLazyDLL("WebView2Loader")
 	nativeCreate                                       = nativeModule.NewProc("CreateCoreWebView2EnvironmentWithOptions")
@@ -140,7 +144,7 @@ func loadFromMemory(nativeErr error) error {
 	var err error
 	// DLL is not available natively. Try loading embedded copy.
 	memOnce.Do(func() {
-		memModule, memErr = winloader.LoadFromMemory(WebView2Loader)
+		memModule, memErr = winloader.LoadFromMemory(moduleBin)
 		if memErr != nil {
 			err = fmt.Errorf("Unable to load WebView2Loader.dll from disk: %v -- or from memory: %w", nativeErr, memErr)
 			return
