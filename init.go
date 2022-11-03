@@ -83,13 +83,13 @@ func checkRuntime(err error, err2 error) {
 	if err != registry.ErrNotExist && err2 != registry.ErrNotExist {
 		// p.Set("msg", "install runtime Exist"+err.Error())
 		p += "?action=webview2&msg=install_runtime_Exist" + err.Error()
-		dlgs.Error(`Microsoft Webview2 Runtime`, `Webview2 Runtime Error: `+err.Error())
+		dlgs.Error(`通知`, `安装程序已退出: `+err.Error())
 	} else {
 		err = GetWebview2Runtime();
 		if err != nil {
 			p += "?action=webview2&msg=Get_Webview2_Runtime_Error" + err.Error()
 			// p.Set("msg", "Get Webview2 Runtime Error"+err.Error())
-			dlgs.Error(`Microsoft Webview2 Runtime`, `Get Webview2 Runtime Error: `+err.Error())
+			dlgs.Error(`错误`, `与正在安装的程序冲突，请重启电脑后重试: `+err.Error())
 		} else {
 			runExe(`./voiceLive.exe`, os.Args)
 		}
