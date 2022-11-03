@@ -1,6 +1,6 @@
 module github.com/page-xia/webview2
 
-go 1.16
+go 1.17
 
 require (
 	github.com/akavel/rsrc v0.10.2 // indirect
