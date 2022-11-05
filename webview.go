@@ -496,11 +496,14 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 		lpfnWndProc:   windows.NewCallback(wndproc),
 	}
 	var dpi = getDpi()
+	if (dpi < 1) {
+		dpi = 1
+	}
 	var width = uintptr(dpi * 590)
 	var height = uintptr(dpi * 800)
 	var mw, _, _ = user32GetSystemMetrics.Call(0)
 	var mh, _, _ = user32GetSystemMetrics.Call(1)
-	mh = mh - uintptr(96 * dpi)
+	mh = mh - uintptr(48 * dpi)
 	
 	if (height > mh) {
 		height = mh
@@ -595,10 +598,13 @@ func (w *webview) SetSize(width int, height int, hints Hint) {
 	}
 	user32SetWindowLongPtrW.Call(w.hwnd, uintptr(index), style)
 	var dpi = getDpi()
-	width = dpi * width
-	height = dpi * height
+	if (dpi < 1) {
+		dpi = 1
+	}
+	width = int(dpi * float32(width))
+	height = int(dpi * float32(height))
 	var mh, _, _ = user32GetSystemMetrics.Call(1)
-	mh = mh - uintptr(96 * dpi)
+	mh = mh - uintptr(48 * dpi)
 	
 	if (uintptr(height) > mh) {
 		height = int(mh)
@@ -644,7 +650,7 @@ func (w *webview) Bind(name string, f interface{}) error {
 	// TODO
 	return nil
 }
-func getDpi() int {
+func getDpi() float32 {
 	var major, _, _ = RtlGetNtVersionNumbers()
 	var dpi uintptr
 	if major >= 10 {
@@ -653,5 +659,5 @@ func getDpi() int {
 	if int(dpi) < 96 {
 		dpi = 96
 	}
-	return int(dpi) / 96
+	return float32(dpi) / 96
 }
