@@ -503,9 +503,9 @@ func (w *webview) Create(debug bool, window unsafe.Pointer) bool {
 	var height = uintptr(dpi * 800)
 	var mw, _, _ = user32GetSystemMetrics.Call(0)
 	var mh, _, _ = user32GetSystemMetrics.Call(1)
-	mh = mh - uintptr(48 * dpi)
+	mh = mh - uintptr(80 * dpi)
 	
-	if (height > mh) {
+	if (height >= mh) {
 		height = mh
 	}
 	user32RegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
@@ -604,9 +604,9 @@ func (w *webview) SetSize(width int, height int, hints Hint) {
 	width = int(dpi * float32(width))
 	height = int(dpi * float32(height))
 	var mh, _, _ = user32GetSystemMetrics.Call(1)
-	mh = mh - uintptr(48 * dpi)
+	mh = mh - uintptr(80 * dpi)
 	
-	if (uintptr(height) > mh) {
+	if (uintptr(height) >= mh) {
 		height = int(mh)
 	}
 	if hints == HintMax {

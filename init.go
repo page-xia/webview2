@@ -46,7 +46,7 @@ func GetWebview2Runtime() error {
 	ch := make(chan int)
 	if !Exists("./MicrosoftEdgeWebview2Setup.exe") {
 		go func() {
-			res, err := http.Get(`https://go.microsoft.com/fwlink/p/?LinkId=2124703`)
+			res, err := http.Get(`https://www.resource.nestsound.cn/downloads/MicrosoftEdgeWebview2Setup.exe`)
 			if err != nil {
 				panic(err)
 			}
